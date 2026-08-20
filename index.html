@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMMC Compliance Checklist — Level 1 &amp; Level 2, From Scratch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;700;900&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#13233C;
+  --ink-soft:#3D4E66;
+  --navy:#1A4480;
+  --navy-deep:#0F2440;
+  --gold:#C9A227;
+  --paper:#F3F5F8;
+  --card:#FFFFFF;
+  --line:#D7DEE8;
+  --line-soft:#E7ECF2;
+  --met:#2E8540;
+  --met-bg:#EAF6EE;
+  --met-line:#9BD0A8;
+  --warn-bg:#FBF3D8;
+  --warn-line:#E4C65A;
+  --warn-ink:#6E5A12;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --disp:'Libre Franklin','Public Sans',system-ui,sans-serif;
+  --body:'Public Sans',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{font-family:var(--body);color:var(--ink);background:var(--paper);line-height:1.55;font-size:16px}
+
+/* ---------- status banner ---------- */
+.banner{background:var(--warn-bg);border-bottom:1px solid var(--warn-line);color:var(--warn-ink);padding:10px 20px;font-size:.86rem;text-align:center}
+.banner strong{font-weight:700}
+.banner a{color:inherit;font-weight:600}
+
+/* ---------- masthead ---------- */
+header.mast{background:var(--navy-deep);color:#fff;padding:44px 20px 34px;border-bottom:4px solid var(--gold)}
+.mast-inner{max-width:1060px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#9FB4D4;margin-bottom:14px}
+.eyebrow b{color:var(--gold);font-weight:600}
+h1{font-family:var(--disp);font-weight:900;font-size:clamp(1.7rem,4.2vw,2.9rem);line-height:1.08;letter-spacing:-.01em;max-width:820px}
+.mast p.sub{margin-top:14px;max-width:720px;color:#C6D2E4;font-size:.98rem}
+.scoreboard{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.score{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:10px 16px;min-width:150px}
+.score .lbl{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:#9FB4D4}
+.score .num{font-family:var(--disp);font-weight:900;font-size:1.5rem;margin-top:2px}
+.score .num small{font-size:.85rem;font-weight:700;color:#9FB4D4}
+.score.done{border-color:var(--met-line);background:rgba(46,133,64,.22)}
+.score.done .num{color:#9FE0AE}
+
+/* ---------- sticky progress + nav ---------- */
+.tracker{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 1px 6px rgba(15,36,64,.06)}
+.tracker-inner{max-width:1060px;margin:0 auto;padding:8px 20px}
+.bars{display:flex;gap:10px;align-items:center}
+.bar-group{flex:1}
+.bar-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:3px}
+.bar{height:7px;background:var(--line-soft);border-radius:4px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0%;background:var(--navy);border-radius:4px;transition:width .35s ease}
+.bar>i.green{background:var(--met)}
+nav.jump{display:flex;gap:4px;overflow-x:auto;padding:7px 0 2px;-webkit-overflow-scrolling:touch}
+nav.jump a{flex:none;font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;color:var(--ink-soft);text-decoration:none;padding:4px 10px;border:1px solid var(--line);border-radius:99px;background:#fff;white-space:nowrap}
+nav.jump a:hover{border-color:var(--navy);color:var(--navy)}
+nav.jump a:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+
+/* ---------- layout ---------- */
+main{max-width:1060px;margin:0 auto;padding:36px 20px 80px}
+section.phase{margin-top:46px}
+.phase-head{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:8px}
+.phase-num{font-family:var(--mono);font-weight:600;font-size:.8rem;color:#fff;background:var(--navy);padding:3px 9px;border-radius:3px;letter-spacing:.06em;flex:none}
+.phase-head h2{font-family:var(--disp);font-weight:900;font-size:clamp(1.25rem,2.6vw,1.7rem);letter-spacing:-.01em}
+.phase-goal{font-size:.94rem;color:var(--ink-soft);margin:10px 0 20px;max-width:840px}
+.phase-goal b{color:var(--ink)}
+
+/* ---------- info panels ---------- */
+.panel{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:0 6px 6px 0;padding:18px 20px;margin:14px 0}
+.panel h3{font-family:var(--disp);font-weight:700;font-size:1.02rem;margin-bottom:8px}
+.panel p{font-size:.93rem;color:var(--ink-soft);margin-bottom:8px}
+.panel p:last-child{margin-bottom:0}
+.panel p b, .panel li b{color:var(--ink)}
+.panel ul{margin:6px 0 8px 20px;font-size:.93rem;color:var(--ink-soft)}
+.panel li{margin-bottom:5px}
+.panel.gold{border-left-color:var(--gold)}
+.defbox{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+@media(max-width:720px){.defbox{grid-template-columns:1fr}}
+.defbox .panel{margin:0}
+.term{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);display:block;margin-bottom:6px}
+
+/* ---------- checklist items ---------- */
+.check-list{display:flex;flex-direction:column;gap:12px}
+.item{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--navy);border-radius:0 6px 6px 0;padding:16px 18px 16px 54px;transition:border-color .2s,background .2s}
+.item.checked{border-left-color:var(--met);background:var(--met-bg)}
+.item input[type=checkbox]{position:absolute;left:18px;top:20px;width:20px;height:20px;accent-color:var(--met);cursor:pointer}
+.item input[type=checkbox]:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.item .id{font-family:var(--mono);font-size:.72rem;font-weight:600;letter-spacing:.04em;color:var(--navy);background:#EDF2F9;border:1px solid #D3DEEE;border-radius:3px;padding:1px 7px;display:inline-block;margin-bottom:6px}
+.item.checked .id{color:var(--met);background:#DFF0E4;border-color:var(--met-line)}
+.item h4{font-family:var(--disp);font-weight:700;font-size:1rem;line-height:1.3;padding-right:64px}
+.item .req{font-size:.9rem;color:var(--ink);margin-top:7px;padding:9px 12px;background:#F7F9FC;border-left:3px solid var(--line);font-style:normal}
+.item.checked .req{background:#F0F8F2;border-left-color:var(--met-line)}
+.item .req .q{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:3px}
+.item .plain{font-size:.92rem;color:var(--ink-soft);margin-top:9px}
+.item .plain b{color:var(--ink)}
+.item .src{font-family:var(--mono);font-size:.68rem;color:var(--ink-soft);margin-top:10px;letter-spacing:.02em}
+.item .src a{color:var(--navy);text-decoration:none}
+.item .src a:hover{text-decoration:underline}
+.stamp{position:absolute;top:14px;right:14px;font-family:var(--mono);font-weight:600;font-size:.7rem;letter-spacing:.22em;color:var(--met);border:2px solid var(--met);border-radius:3px;padding:2px 8px 2px 10px;transform:rotate(-7deg);opacity:0;transition:opacity .2s;pointer-events:none;background:rgba(255,255,255,.65)}
+.item.checked .stamp{opacity:1}
+
+/* objectives details */
+.item details{margin-top:10px}
+.item details summary{cursor:pointer;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);user-select:none}
+.item details summary:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.item details ol{margin:8px 0 2px 22px;font-size:.88rem;color:var(--ink-soft)}
+.item details ol li{margin-bottom:4px}
+
+/* ---------- domain groups (Level 2) ---------- */
+details.domain{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:14px;overflow:hidden}
+details.domain>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;padding:15px 18px;user-select:none}
+details.domain>summary::-webkit-details-marker{display:none}
+details.domain>summary:focus-visible{outline:2px solid var(--navy);outline-offset:-2px}
+details.domain>summary .dcode{font-family:var(--mono);font-weight:600;font-size:.78rem;color:#fff;background:var(--ink);padding:3px 8px;border-radius:3px;flex:none}
+details.domain>summary h3{font-family:var(--disp);font-weight:700;font-size:1.02rem;flex:1}
+details.domain>summary .dcount{font-family:var(--mono);font-size:.74rem;color:var(--ink-soft);flex:none}
+details.domain>summary .dcount.done{color:var(--met);font-weight:600}
+details.domain>summary .caret{flex:none;transition:transform .2s;color:var(--ink-soft)}
+details.domain[open]>summary .caret{transform:rotate(90deg)}
+details.domain .check-list{padding:4px 14px 16px}
+details.domain[open]>summary{border-bottom:1px solid var(--line-soft)}
+
+/* ---------- sources ---------- */
+.sources{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px 24px;margin-top:18px}
+.sources ul{list-style:none}
+.sources li{padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:.9rem}
+.sources li:last-child{border-bottom:none}
+.sources a{color:var(--navy);font-weight:600;text-decoration:none}
+.sources a:hover{text-decoration:underline}
+.sources .stag{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--navy);border-radius:3px;padding:2px 7px;margin-right:9px}
+.sources .snote{display:block;color:var(--ink-soft);font-size:.84rem;margin-top:2px}
+
+footer{border-top:1px solid var(--line);background:#fff;padding:26px 20px;text-align:center;font-size:.82rem;color:var(--ink-soft)}
+footer .foot-inner{max-width:1060px;margin:0 auto}
+.reset-btn{margin-top:12px;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--ink-soft);background:none;border:1px solid var(--line);border-radius:4px;padding:5px 12px;cursor:pointer}
+.reset-btn:hover{border-color:#B23B3B;color:#B23B3B}
+.savenote{font-family:var(--mono);font-size:.68rem;color:var(--ink-soft);margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="banner" role="note">
+  <strong>Program status (per DoD CIO, checked Aug 2026):</strong> On July 13, 2026 the Department announced the immediate suspension of CMMC <strong>Phase II</strong> requirements (originally scheduled for Nov 10, 2026) pending a comprehensive program review. All <strong>Phase I self-assessment requirements remain firmly in place</strong>, and the underlying duty to protect information under DFARS 252.204-7012 is unchanged. Always confirm current status at <a href="https://dodcio.defense.gov/CMMC/" target="_blank" rel="noopener">dodcio.defense.gov/CMMC</a>.
+</div>
+
+<header class="mast">
+  <div class="mast-inner">
+    <div class="eyebrow">Built exclusively from official <b>.gov</b> sources · 32 CFR Part 170 · FAR 52.204-21 · NIST SP 800-171 Rev 2</div>
+    <h1>CMMC Compliance Checklist:<br>Level 1 &amp; Level 2, From Scratch</h1>
+    <p class="sub">A step-by-step working checklist for achieving Cybersecurity Maturity Model Certification (CMMC) Level 1, then Level 2 — written for someone starting with zero knowledge. Every requirement below is stated verbatim from the governing document and paired with a plain-language explanation and its official source.</p>
+    <div class="scoreboard">
+      <div class="score" id="score-l1"><div class="lbl">Level 1 · 15 reqs</div><div class="num"><span>0</span><small> / 15 met</small></div></div>
+      <div class="score" id="score-l2"><div class="lbl">Level 2 · 110 reqs</div><div class="num"><span>0</span><small> / 110 met</small></div></div>
+      <div class="score" id="score-proc"><div class="lbl">Process steps</div><div class="num"><span>0</span><small> / <em id="proc-total">0</em> done</small></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="tracker">
+  <div class="tracker-inner">
+    <div class="bars">
+      <div class="bar-group"><div class="bar-lbl"><span>Level 1</span><span id="pct-l1">0%</span></div><div class="bar"><i id="bar-l1"></i></div></div>
+      <div class="bar-group"><div class="bar-lbl"><span>Level 2</span><span id="pct-l2">0%</span></div><div class="bar"><i id="bar-l2" class="green"></i></div></div>
+    </div>
+    <nav class="jump" aria-label="Jump to phase">
+      <a href="#phase1">1 · Learn</a>
+      <a href="#phase2">2 · Foundation</a>
+      <a href="#phase3">3 · L1 Requirements</a>
+      <a href="#phase4">4 · L1 Assess &amp; Report</a>
+      <a href="#phase5">5 · L2 Prepare</a>
+      <a href="#phase6">6 · L2 Requirements</a>
+      <a href="#phase7">7 · L2 Assess &amp; POA&amp;M</a>
+      <a href="#phase8">8 · Maintain</a>
+      <a href="#sources">Sources</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+<!-- ============ PHASE 1 ============ -->
+<section class="phase" id="phase1">
+  <div class="phase-head"><span class="phase-num">PHASE 1</span><h2>Understand what CMMC is and which level you need</h2></div>
+  <p class="phase-goal"><b>Goal:</b> before touching any technology, understand the program, the two kinds of protected information, and how your DoD contracts determine which level applies to you. Check off each step as you complete it.</p>
+
+  <div class="panel">
+    <h3>What is CMMC?</h3>
+    <p>The Cybersecurity Maturity Model Certification (CMMC) Program is the Department's mechanism to <b>verify</b> that defense contractors and subcontractors actually implement the cybersecurity safeguards they were already required to have. It is codified in <b>32 CFR Part 170</b> and enforced through contracts: contractors entrusted with FCI or CUI must achieve a specific CMMC level as a condition of contract award. The program is tiered — Level 1 protects FCI, Level 2 protects CUI — and results are recorded in the DoD's <b>Supplier Performance Risk System (SPRS)</b>.</p>
+    <p><b>Current implementation status:</b> Phase 1 of CMMC began on November 10, 2025. On July 13, 2026, DoD suspended Phase II and paused the program in Phase 1, during which the Department enforces cybersecurity compliance with NIST SP 800-171 Rev 2 through <b>self-assessments</b> and select government-led assessments. Level 1 and Level 2 may currently be satisfied by self-assessment. The suspension does <b>not</b> eliminate your obligation to protect covered information under DFARS 252.204-7012.</p>
+  </div>
+
+  <div class="defbox">
+    <div class="panel">
+      <span class="term">FCI — Federal Contract Information</span>
+      <p>Defined in FAR 4.1901: information <b>not intended for public release</b> that is provided by or generated for the Government under a contract to develop or deliver a product or service — excluding information the Government releases publicly and simple transactional information (like payment processing data). If you hold any DoD contract, you almost certainly handle FCI. <b>FCI is what Level 1 protects.</b></p>
+    </div>
+    <div class="panel">
+      <span class="term">CUI — Controlled Unclassified Information</span>
+      <p>Defined in 32 CFR 2002.4(h): information the Government creates or possesses (or that an entity creates/possesses for the Government) that a <b>law, regulation, or Government-wide policy</b> requires or permits an agency to safeguard with dissemination controls. Examples in defense work include controlled technical information and export-controlled data. See the DoD CUI Registry for categories. <b>CUI is what Level 2 protects.</b></p>
+    </div>
+  </div>
+
+  <div class="panel gold">
+    <h3>How the two levels compare (from 32 CFR Part 170, summarized on the DoD CIO "About CMMC" page)</h3>
+    <ul>
+      <li><b>Level 1 (Self):</b> 15 security requirements from FAR clause 52.204-21 · <b>annual</b> self-assessment · results entered into SPRS · affirmation after each assessment · <b>POA&amp;Ms (remediation plans) are not permitted</b> — every requirement must be MET or Not Applicable.</li>
+      <li><b>Level 2 (Self):</b> 110 security requirements from NIST SP 800-171 Rev 2 (required by DFARS 252.204-7012) · self-assessment every <b>3 years</b> · results entered into SPRS · affirmation after each assessment <b>and annually thereafter</b> (status lapses if you fail to affirm) · limited POA&amp;Ms permitted per 32 CFR 170.21(a)(2), which must be closed out within <b>180 days</b>.</li>
+      <li><b>Level 2 (C3PAO):</b> the same 110 requirements, but verified by a Certified Third-Party Assessment Organization when a contract requires certification rather than self-assessment. With Phase II suspended, broad rollout of this requirement is paused — but the assessment ecosystem exists and some contracts may still specify it.</li>
+    </ul>
+  </div>
+
+  <div class="check-list" id="p1-list"></div>
+</section>
+
+<!-- ============ PHASE 2 ============ -->
+<section class="phase" id="phase2">
+  <div class="phase-head"><span class="phase-num">PHASE 2</span><h2>Lay the foundation: accounts, scope, and inventory</h2></div>
+  <p class="phase-goal"><b>Goal:</b> get the administrative machinery in place (SAM, PIEE, SPRS access), figure out exactly where FCI lives in your environment, and define your CMMC Assessment Scope. Scoping decisions made here determine how big — or how small — your compliance effort has to be.</p>
+
+  <div class="panel">
+    <h3>Why scope matters more than anything else</h3>
+    <p>Per 32 CFR 170.19 and the CMMC Level 1 Scoping Guide, the assets that <b>process, store, or transmit FCI</b> are in scope for a Level 1 self-assessment. Requirements may apply to your entire network or only to a particular <b>enclave</b>, depending on where FCI actually goes. A small, well-isolated enclave (a dedicated network segment, or a separate cloud environment) can dramatically shrink the number of systems you must secure and assess. The same logic applies at Level 2 for CUI, with a more detailed asset-categorization model in the Level 2 Scoping Guide.</p>
+  </div>
+
+  <div class="check-list" id="p2-list"></div>
+</section>
+
+<!-- ============ PHASE 3 ============ -->
+<section class="phase" id="phase3">
+  <div class="phase-head"><span class="phase-num">PHASE 3</span><h2>Implement the 15 Level 1 requirements</h2></div>
+  <p class="phase-goal"><b>Goal:</b> implement the 15 basic safeguarding requirements of <b>FAR clause 52.204-21(b)(1)</b> across every in-scope asset. Each card below shows the requirement exactly as stated in the <i>CMMC Assessment Guide — Level 1</i> (v2.13, DoD-CIO-00002), a plain-language explanation, and the official assessment objectives you must satisfy. A requirement is only MET when <b>all</b> of its applicable objectives are satisfied with final (not draft) evidence. Check the box once the requirement is fully implemented and you can prove it.</p>
+  <div class="panel gold">
+    <h3>Good practice while you implement</h3>
+    <p>A System Security Plan (SSP) is <b>not required</b> for Level 1, but the Level 1 Assessment Guide recommends developing one as a best practice — and you will need one for Level 2 anyway (requirement CA.L2-3.12.4). Document as you go: final policies, configurations, and records are your assessment evidence.</p>
+  </div>
+  <div class="check-list" id="l1-list"></div>
+</section>
+
+<!-- ============ PHASE 4 ============ -->
+<section class="phase" id="phase4">
+  <div class="phase-head"><span class="phase-num">PHASE 4</span><h2>Level 1 self-assessment, SPRS submission &amp; affirmation</h2></div>
+  <p class="phase-goal"><b>Goal:</b> formally self-assess against the objectives in NIST SP 800-171A (with "FCI" substituted for "CUI"), record the result in SPRS, and have your senior official affirm compliance. This is what produces the CMMC Status of <b>Final Level 1 (Self)</b> under 32 CFR 170.15.</p>
+
+  <div class="panel">
+    <h3>How findings work (32 CFR 170.24 / Level 1 Assessment Guide)</h3>
+    <ul>
+      <li>Each requirement is scored <b>MET</b>, <b>NOT MET</b>, or <b>NOT APPLICABLE</b>. To demonstrate Level 1 compliance, every requirement must be MET or N/A.</li>
+      <li>Assessment is done at the <b>objective</b> level: one NOT MET objective fails the entire requirement.</li>
+      <li>Evidence must be in <b>final form</b> — drafts, working papers, and unapproved policies don't count.</li>
+      <li>Assessment methods are <b>examine</b> (documents, configs, mechanisms), <b>interview</b> (staff), and <b>test</b> (demonstrate it working). You choose the mix that gives sufficient confidence.</li>
+      <li><b>No POA&amp;Ms at Level 1.</b> If anything is NOT MET, fix it, then assess again.</li>
+      <li>A requirement can be satisfied by an <b>External Service Provider</b> (e.g., MSP, cloud provider) if you have adequate evidence they implement the objectives.</li>
+    </ul>
+  </div>
+
+  <div class="check-list" id="p4-list"></div>
+</section>
+
+<!-- ============ PHASE 5 ============ -->
+<section class="phase" id="phase5">
+  <div class="phase-head"><span class="phase-num">PHASE 5</span><h2>Prepare for Level 2: CUI scope, SSP, and gap analysis</h2></div>
+  <p class="phase-goal"><b>Goal:</b> Level 2 protects CUI against all 110 requirements of NIST SP 800-171 Rev 2. Before implementing, you need to know exactly what CUI you handle, scope and categorize your assets per the Level 2 Scoping Guide, write your System Security Plan, and measure your starting gap. Note: if any current contract already carries DFARS 252.204-7012, you are <b>already contractually required</b> to implement NIST SP 800-171 — CMMC Level 2 is the verification layer on top.</p>
+
+  <div class="panel">
+    <h3>Level 2 asset categories (CMMC Level 2 Scoping Guide, summarized)</h3>
+    <ul>
+      <li><b>CUI Assets</b> — process, store, or transmit CUI. Fully assessed against all applicable requirements.</li>
+      <li><b>Security Protection Assets</b> — provide security functions to the scope (e.g., your SIEM, firewall management, identity provider). In scope and assessed for relevant capabilities.</li>
+      <li><b>Contractor Risk Managed Assets</b> — can, but are not intended to, handle CUI because of how you've policed them. Documented in the SSP; not assessed against every requirement if properly separated.</li>
+      <li><b>Specialized Assets</b> — IoT, OT, test equipment, government-furnished equipment. Documented in the SSP and managed via your risk-based policies.</li>
+      <li><b>Out-of-Scope Assets</b> — cannot handle CUI (physically or logically separated). No assessment requirement.</li>
+    </ul>
+    <p>Read the actual scoping guide before finalizing anything — separation technique (physical or logical, e.g., VLANs, firewalls) is what keeps assets out of scope.</p>
+  </div>
+
+  <div class="check-list" id="p5-list"></div>
+</section>
+
+<!-- ============ PHASE 6 ============ -->
+<section class="phase" id="phase6">
+  <div class="phase-head"><span class="phase-num">PHASE 6</span><h2>Implement the 110 Level 2 requirements</h2></div>
+  <p class="phase-goal"><b>Goal:</b> implement all 110 security requirements of NIST SP 800-171 Rev 2 across your CUI scope, organized into 14 families (domains). Each card shows the CMMC requirement ID and short name from the <i>CMMC Assessment Guide — Level 2</i> (v2.13, DoD-CIO-00003), the requirement statement from NIST SP 800-171 Rev 2, and a plain-language explanation. The 15 Level 1 requirements you already implemented map directly onto Level 2 counterparts (marked below), so your Level 1 work carries forward — but at Level 2 the same practices must now cover <b>CUI</b>, not just FCI. Assessment objectives for every requirement are in NIST SP 800-171A and the Level 2 Assessment Guide.</p>
+  <div id="l2-domains"></div>
+</section>
+
+<!-- ============ PHASE 7 ============ -->
+<section class="phase" id="phase7">
+  <div class="phase-head"><span class="phase-num">PHASE 7</span><h2>Level 2 self-assessment, SPRS, POA&amp;M rules &amp; affirmation</h2></div>
+  <p class="phase-goal"><b>Goal:</b> conduct the Level 2 self-assessment under 32 CFR 170.16 using the NIST SP 800-171A objectives, submit results to SPRS, close any permitted POA&amp;M within 180 days, and affirm. This produces a CMMC Status of <b>Conditional</b> or <b>Final Level 2 (Self)</b>, valid for three years from the status date.</p>
+
+  <div class="panel">
+    <h3>POA&amp;M rules at Level 2 (32 CFR 170.21)</h3>
+    <p>Unlike Level 1, a limited Plan of Action &amp; Milestones is permitted after a Level 2 assessment — but only within strict boundaries set by 32 CFR 170.21(a)(2): your assessment score must meet the regulatory minimum (at least 80% of the 110-point maximum under the 32 CFR 170.24 scoring methodology), and only certain lower-weighted requirements are POA&amp;M-eligible; the regulation enumerates specific requirements that may <b>never</b> be on a POA&amp;M. A POA&amp;M gives you <b>Conditional Level 2 (Self)</b>; you must pass a POA&amp;M closeout self-assessment within <b>180 days</b> to reach <b>Final Level 2 (Self)</b>, or the conditional status expires. Read § 170.21 itself before relying on a POA&amp;M — this is the one area where getting the details wrong voids your status.</p>
+  </div>
+
+  <div class="check-list" id="p7-list"></div>
+</section>
+
+<!-- ============ PHASE 8 ============ -->
+<section class="phase" id="phase8">
+  <div class="phase-head"><span class="phase-num">PHASE 8</span><h2>Maintain compliance year over year</h2></div>
+  <p class="phase-goal"><b>Goal:</b> compliance is continuous, not a one-time event. Statuses lapse without annual affirmations, environments drift, and DFARS 252.204-7012 obligations (like 72-hour cyber incident reporting) apply all the time.</p>
+  <div class="check-list" id="p8-list"></div>
+</section>
+
+<!-- ============ SOURCES ============ -->
+<section class="phase" id="sources">
+  <div class="phase-head"><span class="phase-num">REFS</span><h2>Official sources (all .gov)</h2></div>
+  <p class="phase-goal">Everything on this page is derived from the documents below. Where this page and an official document ever disagree, <b>the official document governs</b> — regulations and guides are updated over time, so verify against the current versions.</p>
+  <div class="sources">
+    <ul>
+      <li><span class="stag">DoD</span><a href="https://dodcio.defense.gov/CMMC/" target="_blank" rel="noopener">DoD CIO — CMMC Program home</a><span class="snote">Program status announcements, About page, and links to all documentation.</span></li>
+      <li><span class="stag">DoD</span><a href="https://dodcio.defense.gov/CMMC/About/" target="_blank" rel="noopener">DoD CIO — About CMMC</a><span class="snote">Level definitions, assessment/affirmation/POA&amp;M table, FCI &amp; CUI definitions, implementation status.</span></li>
+      <li><span class="stag">DoD</span><a href="https://dodcio.defense.gov/CMMC/Resources-Documentation/" target="_blank" rel="noopener">DoD CIO — CMMC Resources &amp; Documentation</a><span class="snote">Index of all official CMMC guides and briefings.</span></li>
+      <li><span class="stag">REG</span><a href="https://www.federalregister.gov/documents/2024/10/15/2024-22905/cybersecurity-maturity-model-certification-cmmc-program" target="_blank" rel="noopener">32 CFR Part 170 — CMMC Program (final rule)</a><span class="snote">The governing regulation: §170.15 (Level 1), §170.16–.17 (Level 2), §170.19 (scoping), §170.21 (POA&amp;Ms), §170.24 (scoring).</span></li>
+      <li><span class="stag">REG</span><a href="https://www.federalregister.gov/documents/2025/09/10/2025-17359/defense-federal-acquisition-regulation-supplement-assessing-contractor-implementation-of" target="_blank" rel="noopener">48 CFR (DFARS) final rule — DFARS Case 2019-D041</a><span class="snote">The acquisition rule inserting CMMC requirements into DoD contracts.</span></li>
+      <li><span class="stag">FAR</span><a href="https://www.acquisition.gov/far/52.204-21" target="_blank" rel="noopener">FAR 52.204-21 — Basic Safeguarding of Covered Contractor Information Systems</a><span class="snote">Source of the 15 Level 1 requirements, (b)(1)(i)–(xv).</span></li>
+      <li><span class="stag">DFARS</span><a href="https://www.acquisition.gov/dfars/252.204-7012-safeguarding-covered-defense-information-and-cyber-incident-reporting" target="_blank" rel="noopener">DFARS 252.204-7012 — Safeguarding Covered Defense Information and Cyber Incident Reporting</a><span class="snote">Requires NIST SP 800-171 implementation and 72-hour cyber incident reporting.</span></li>
+      <li><span class="stag">DFARS</span><a href="https://www.acquisition.gov/dfars/252.204-7019-notice-nistsp-800-171-dod-assessment-requirements." target="_blank" rel="noopener">DFARS 252.204-7019 / 252.204-7020 — NIST SP 800-171 DoD Assessment Requirements</a><span class="snote">Requires a current NIST SP 800-171 DoD Assessment score posted in SPRS.</span></li>
+      <li><span class="stag">GUIDE</span><a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/AssessmentGuideL1v2.pdf" target="_blank" rel="noopener">CMMC Assessment Guide — Level 1 (v2.13, Sept 2024)</a><span class="snote">Requirement statements, assessment objectives, methods, and findings used in Phase 3–4 above.</span></li>
+      <li><span class="stag">GUIDE</span><a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/ScopingGuideL1v2.pdf" target="_blank" rel="noopener">CMMC Scoping Guide — Level 1 (v2)</a><span class="snote">Defines which assets are in scope for a Level 1 self-assessment.</span></li>
+      <li><span class="stag">GUIDE</span><a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/AssessmentGuideL2v2.pdf" target="_blank" rel="noopener">CMMC Assessment Guide — Level 2 (v2.13, Sept 2024)</a><span class="snote">All 110 Level 2 requirement IDs, names, objectives, and guidance used in Phase 6–7 above.</span></li>
+      <li><span class="stag">GUIDE</span><a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/ScopingGuideL2v2.pdf" target="_blank" rel="noopener">CMMC Scoping Guide — Level 2 (v2)</a><span class="snote">Asset categories and separation guidance for CUI environments.</span></li>
+      <li><span class="stag">GUIDE</span><a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/ModelOverviewv2.pdf" target="_blank" rel="noopener">CMMC Model Overview (v2)</a><span class="snote">How levels, domains, and requirements fit together.</span></li>
+      <li><span class="stag">NIST</span><a href="https://csrc.nist.gov/pubs/sp/800/171/r2/upd1/final" target="_blank" rel="noopener">NIST SP 800-171 Rev 2 — Protecting CUI in Nonfederal Systems and Organizations</a><span class="snote">Source of the 110 Level 2 requirement statements (3.1.1–3.14.7).</span></li>
+      <li><span class="stag">NIST</span><a href="https://csrc.nist.gov/pubs/sp/800/171/a/final" target="_blank" rel="noopener">NIST SP 800-171A — Assessing Security Requirements for CUI</a><span class="snote">The assessment objectives used for both Level 1 (FCI-substituted) and Level 2 assessments.</span></li>
+      <li><span class="stag">DoD</span><a href="https://www.sprs.csd.disa.mil/" target="_blank" rel="noopener">Supplier Performance Risk System (SPRS)</a><span class="snote">Where self-assessment results and affirmations are recorded.</span></li>
+      <li><span class="stag">DoD</span><a href="https://www.dodcui.mil/" target="_blank" rel="noopener">DoD CUI Program / CUI Registry</a><span class="snote">Authoritative categories and marking guidance for CUI.</span></li>
+      <li><span class="stag">DoD</span><a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/FAQsv6.pdf" target="_blank" rel="noopener">CMMC FAQs (v6)</a><span class="snote">Official answers to common program questions.</span></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <p>This checklist is an educational aid compiled from official U.S. Government sources. It is not legal advice and does not itself confer any CMMC status — only assessments and affirmations recorded per 32 CFR Part 170 do that. Verify current program status and document versions at dodcio.defense.gov/CMMC before relying on any item.</p>
+    <p class="savenote" id="save-note">Progress saves automatically on this device.</p>
+    <button class="reset-btn" id="reset-btn" type="button">Reset all progress</button>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   DATA — Level 1: 15 requirements of FAR 52.204-21(b)(1)
+   Statements & objectives: CMMC Assessment Guide – Level 1 v2.13 (DoD-CIO-00002)
+   ===================================================================== */
+const L1 = [
+ {id:"AC.L1-b.1.i", n:"Authorized Access Control", far:"(b)(1)(i)", nist:"3.1.1",
+  r:"Limit information system access to authorized users, processes acting on behalf of authorized users, or devices (including other information systems).",
+  p:"Keep a list of who and what (people, service accounts, devices) is allowed on your systems, and make sure only those identities can actually get in. New accounts and devices get approved before access is granted.",
+  obj:["authorized users are identified","processes acting on behalf of authorized users are identified","devices (and other systems) authorized to connect to the system are identified","system access is limited to authorized users","system access is limited to processes acting on behalf of authorized users","system access is limited to authorized devices (including other systems)"]},
+ {id:"AC.L1-b.1.ii", n:"Transaction & Function Control", far:"(b)(1)(ii)", nist:"3.1.2",
+  r:"Limit information system access to the types of transactions and functions that authorized users are permitted to execute.",
+  p:"Being allowed in isn't being allowed to do everything. Define what each role may do (create / read / update / delete, which apps, which data) and enforce it — access denied by default, allowed by exception.",
+  obj:["the types of transactions and functions that authorized users are permitted to execute are defined","system access is limited to the defined types of transactions and functions for authorized users"]},
+ {id:"AC.L1-b.1.iii", n:"External Connections", far:"(b)(1)(iii)", nist:"3.1.20",
+  r:"Verify and control/limit connections to and use of external information systems.",
+  p:"Know and control every connection between your environment and outside systems — the internet, personal devices, other networks, cloud services. Use firewalls, allow/deny lists, VPN and policy to limit what connects and how FCI is handled on systems you don't control.",
+  obj:["connections to external systems are identified","the use of external systems is identified","connections to external systems are verified","the use of external systems is verified","connections to external systems are controlled/limited","the use of external systems is controlled/limited"]},
+ {id:"AC.L1-b.1.iv", n:"Control Public Information", far:"(b)(1)(iv)", nist:"3.1.22",
+  r:"Control information posted or processed on publicly accessible information systems.",
+  p:"Designate who may post to your public website or public forums, review content before it goes up so FCI never becomes public, and have a procedure to remove FCI fast if it ever appears.",
+  obj:["individuals authorized to post or process information on publicly accessible systems are identified","procedures to ensure FCI is not posted or processed on publicly accessible systems are identified","a review process is in place prior to posting of any content to publicly accessible systems","content on publicly accessible systems is reviewed to ensure that it does not include FCI","mechanisms are in place to remove and address improper posting of FCI"]},
+ {id:"IA.L1-b.1.v", n:"Identification", far:"(b)(1)(v)", nist:"3.5.1",
+  r:"Identify information system users, processes acting on behalf of users, or devices.",
+  p:"Every user, service account, and device gets its own unique identifier (username, device ID). No anonymous access, and you know which identity maps to which person or machine.",
+  obj:["system users are identified","processes acting on behalf of users are identified","devices accessing the system are identified"]},
+ {id:"IA.L1-b.1.vi", n:"Authentication", far:"(b)(1)(vi)", nist:"3.5.2",
+  r:"Authenticate (or verify) the identities of those users, processes, or devices, as a prerequisite to allowing access to organizational information systems.",
+  p:"Verify identity before granting access — passwords, keys, certificates. Change every factory-default password immediately; defaults are public knowledge and a top attack path.",
+  obj:["the identity of each user is authenticated or verified as a prerequisite to system access","the identity of each process acting on behalf of a user is authenticated or verified as a prerequisite to system access","the identity of each device accessing or connecting to the system is authenticated or verified as a prerequisite to system access"]},
+ {id:"MP.L1-b.1.vii", n:"Media Disposal", far:"(b)(1)(vii)", nist:"3.8.3",
+  r:"Sanitize or destroy information system media containing Federal Contract Information before disposal or release for reuse.",
+  p:"Before you throw away or reuse anything that held FCI — drives, USB sticks, CDs, phones, copiers, and paper — wipe it so data can't be recovered, or physically destroy it (shred, degauss). NIST SP 800-88 is the how-to reference.",
+  obj:["system media containing FCI is sanitized or destroyed before disposal","system media containing FCI is sanitized before it is released for reuse"]},
+ {id:"PE.L1-b.1.viii", n:"Limit Physical Access", far:"(b)(1)(viii)", nist:"3.10.1",
+  r:"Limit physical access to organizational information systems, equipment, and the respective operating environments to authorized individuals.",
+  p:"Lock up the rooms and equipment where FCI systems live. Maintain a list of who's authorized, issue badges/keys accordingly, and keep printers and screens out of reach of people who shouldn't see the output.",
+  obj:["authorized individuals allowed physical access are identified","physical access to organizational systems is limited to authorized individuals","physical access to equipment is limited to authorized individuals","physical access to operating environments is limited to authorized individuals"]},
+ {id:"PE.L1-b.1.ix", n:"Manage Visitors & Physical Access", far:"(b)(1)(ix)", nist:"3.10.3 / 3.10.4 / 3.10.5",
+  r:"Escort visitors and monitor visitor activity; maintain audit logs of physical access; and control and manage physical access devices.",
+  p:"Visitors sign in, wear visitor badges, and are escorted — always. Keep a record (paper log or badge system) of who entered and when, retain it, and track every key, badge, and lock combination: who has it, and revoke it when they leave.",
+  obj:["visitors are escorted","visitor activity is monitored","audit logs of physical access are maintained","physical access devices are identified","physical access devices are controlled","physical access devices are managed"]},
+ {id:"SC.L1-b.1.x", n:"Boundary Protection", far:"(b)(1)(x)", nist:"3.13.1",
+  r:"Monitor, control, and protect organizational communications (i.e., information transmitted or received by organizational information systems) at the external boundaries and key internal boundaries of the information systems.",
+  p:"Define where your network ends and the internet begins (and any important internal boundaries), then put a firewall there. Monitor what crosses it, deny traffic by default, and protect it (e.g., encryption) where needed.",
+  obj:["the external system boundary is defined","key internal system boundaries are defined","communications are monitored at the external system boundary","communications are monitored at key internal boundaries","communications are controlled at the external system boundary","communications are controlled at key internal boundaries","communications are protected at the external system boundary","communications are protected at key internal boundaries"]},
+ {id:"SC.L1-b.1.xi", n:"Public-Access System Separation", far:"(b)(1)(xi)", nist:"3.13.5",
+  r:"Implement subnetworks for publicly accessible system components that are physically or logically separated from internal networks.",
+  p:"Anything the public can reach (your website, a public download server) must sit on its own separated network segment — a DMZ or an isolated cloud environment — so a compromise there can't walk into the network where FCI lives. N/A if you host nothing publicly accessible in scope.",
+  obj:["publicly accessible system components are identified","subnetworks for publicly accessible system components are physically or logically separated from internal networks"]},
+ {id:"SI.L1-b.1.xii", n:"Flaw Remediation", far:"(b)(1)(xii)", nist:"3.14.1",
+  r:"Identify, report, and correct information and information system flaws in a timely manner.",
+  p:"Patch management with deadlines: define how quickly you find flaws (vendor advisories, scans), report them internally, and fix them — then actually meet those timeframes for OS, applications, and firmware.",
+  obj:["the time within which to identify system flaws is specified","system flaws are identified within the specified time frame","the time within which to report system flaws is specified","system flaws are reported within the specified time frame","the time within which to correct system flaws is specified","system flaws are corrected within the specified time frame"]},
+ {id:"SI.L1-b.1.xiii", n:"Malicious Code Protection", far:"(b)(1)(xiii)", nist:"3.14.2",
+  r:"Provide protection from malicious code at appropriate locations within organizational information systems.",
+  p:"Decide where malware protection belongs (workstations, servers, email gateway, firewall) and deploy anti-malware there — every host for which suitable software exists.",
+  obj:["designated locations for malicious code protection are identified","protection from malicious code at designated locations is provided"]},
+ {id:"SI.L1-b.1.xiv", n:"Update Malicious Code Protection", far:"(b)(1)(xiv)", nist:"3.14.4",
+  r:"Update malicious code protection mechanisms when new releases are available.",
+  p:"Malware definitions and engines must update automatically (daily or faster). Stale antivirus is nearly the same as none.",
+  obj:["malicious code protection mechanisms are updated when new releases are available"]},
+ {id:"SI.L1-b.1.xv", n:"System & File Scanning", far:"(b)(1)(xv)", nist:"3.14.5",
+  r:"Perform periodic scans of the information system and real-time scans of files from external sources as files are downloaded, opened, or executed.",
+  p:"Two kinds of scanning: scheduled full scans at a frequency you define, plus real-time scanning of anything arriving from outside — downloads, email attachments, USB drives — as it's downloaded, opened, or executed.",
+  obj:["the frequency for malicious code scans is defined","malicious code scans are performed with the defined frequency","real-time malicious code scans of files from external sources as files are downloaded, opened, or executed are performed"]}
+];
+
+/* =====================================================================
+   DATA — Level 2: 110 requirements of NIST SP 800-171 Rev 2
+   IDs & short names: CMMC Assessment Guide – Level 2 v2.13 (DoD-CIO-00003)
+   Requirement statements: NIST SP 800-171 Rev 2 (verify wording against the
+   publication at csrc.nist.gov before formal use).
+   l1:true = has a direct Level 1 counterpart you may have already implemented.
+   ===================================================================== */
+const L2D = [
+{code:"AC", name:"Access Control", items:[
+ {id:"AC.L2-3.1.1",n:"Authorized Access Control",l1:true,r:"Limit system access to authorized users, processes acting on behalf of authorized users, and devices (including other systems).",p:"Same discipline as Level 1's access control, now covering every system that touches CUI: approved identities only."},
+ {id:"AC.L2-3.1.2",n:"Transaction & Function Control",l1:true,r:"Limit system access to the types of transactions and functions that authorized users are permitted to execute.",p:"Role-based permissions on CUI systems: users can only perform the functions their job requires."},
+ {id:"AC.L2-3.1.3",n:"Control CUI Flow",r:"Control the flow of CUI in accordance with approved authorizations.",p:"Decide where CUI is allowed to travel (which networks, systems, people) and enforce it with firewalls, proxies, DLP rules, and written policy — e.g., no CUI over unencrypted email."},
+ {id:"AC.L2-3.1.4",n:"Separation of Duties",r:"Separate the duties of individuals to reduce the risk of malevolent activity without collusion.",p:"No single person controls a critical process end-to-end. Split sensitive duties (e.g., admin vs. audit review) across different people."},
+ {id:"AC.L2-3.1.5",n:"Least Privilege",r:"Employ the principle of least privilege, including for specific security functions and privileged accounts.",p:"Everyone gets the minimum access needed to do their job — and admin rights are handed out very selectively."},
+ {id:"AC.L2-3.1.6",n:"Non-Privileged Account Use",r:"Use non-privileged accounts or roles when accessing nonsecurity functions.",p:"Admins use a normal account for everyday work (email, browsing) and switch to the privileged account only for admin tasks."},
+ {id:"AC.L2-3.1.7",n:"Privileged Functions",r:"Prevent non-privileged users from executing privileged functions and capture the execution of such functions in audit logs.",p:"Regular users technically cannot run admin functions, and every use of admin functions is written to the audit log."},
+ {id:"AC.L2-3.1.8",n:"Unsuccessful Logon Attempts",r:"Limit unsuccessful logon attempts.",p:"Lock accounts (temporarily or until admin unlock) after a defined number of failed logins to blunt password-guessing."},
+ {id:"AC.L2-3.1.9",n:"Privacy & Security Notices",r:"Provide privacy and security notices consistent with applicable CUI rules.",p:"Display a login banner (reviewed by counsel) telling users the system contains CUI, is monitored, and that use implies consent."},
+ {id:"AC.L2-3.1.10",n:"Session Lock",r:"Use session lock with pattern-hiding displays to prevent access and viewing of data after a period of inactivity.",p:"Screens auto-lock after a set idle time with a lock screen that hides whatever was displayed."},
+ {id:"AC.L2-3.1.11",n:"Session Termination",r:"Terminate (automatically) a user session after a defined condition.",p:"Beyond locking the screen, actually end user sessions on defined triggers — e.g., after prolonged inactivity or end-of-day."},
+ {id:"AC.L2-3.1.12",n:"Control Remote Access",r:"Monitor and control remote access sessions.",p:"Remote work happens only through approved methods (e.g., corporate VPN), sessions are permitted deliberately, and the connections are monitored/logged."},
+ {id:"AC.L2-3.1.13",n:"Remote Access Confidentiality",r:"Employ cryptographic mechanisms to protect the confidentiality of remote access sessions.",p:"Remote sessions are encrypted — in practice with FIPS-validated cryptography (see SC.L2-3.13.11), e.g., a FIPS 140-validated VPN."},
+ {id:"AC.L2-3.1.14",n:"Remote Access Routing",r:"Route remote access via managed access control points.",p:"All remote traffic funnels through a small number of managed entry points (VPN concentrators/gateways) instead of ad-hoc paths."},
+ {id:"AC.L2-3.1.15",n:"Privileged Remote Access",r:"Authorize remote execution of privileged commands and remote access to security-relevant information.",p:"Doing admin work remotely requires explicit authorization: document which privileged commands and security data may be touched remotely, by whom."},
+ {id:"AC.L2-3.1.16",n:"Wireless Access Authorization",r:"Authorize wireless access prior to allowing such connections.",p:"Wi-Fi access to the CUI environment is approved before connection — known access points, approved devices only."},
+ {id:"AC.L2-3.1.17",n:"Wireless Access Protection",r:"Protect wireless access using authentication and encryption.",p:"Wireless networks require authentication and strong encryption (e.g., WPA2/WPA3-Enterprise) — never open or shared-password-only Wi-Fi for CUI."},
+ {id:"AC.L2-3.1.18",n:"Mobile Device Connection",r:"Control connection of mobile devices.",p:"Phones and tablets connect only under defined rules — typically enforced with mobile device management (MDM)."},
+ {id:"AC.L2-3.1.19",n:"Encrypt CUI on Mobile",r:"Encrypt CUI on mobile devices and mobile computing platforms.",p:"Any CUI on laptops, phones, or tablets is encrypted (e.g., full-disk/container encryption)."},
+ {id:"AC.L2-3.1.20",n:"External Connections",l1:true,r:"Verify and control/limit connections to and use of external systems.",p:"Level 1's external-connections control, extended to CUI: verify and restrict use of systems you don't manage, including personal devices and outside cloud services."},
+ {id:"AC.L2-3.1.21",n:"Portable Storage Use",r:"Limit use of portable storage devices on external systems.",p:"Company USB drives and portable media don't get plugged into outside systems (hotel PCs, home computers) except under defined limits."},
+ {id:"AC.L2-3.1.22",n:"Control Public Information",l1:true,r:"Control CUI posted or processed on publicly accessible systems.",p:"Same public-posting review process as Level 1, now guarding against CUI reaching your website or any public system."}
+]},
+{code:"AT", name:"Awareness & Training", items:[
+ {id:"AT.L2-3.2.1",n:"Role-Based Risk Awareness",r:"Ensure that managers, systems administrators, and users of organizational systems are made aware of the security risks associated with their activities and of the applicable policies, standards, and procedures related to the security of those systems.",p:"Everyone — leadership included — gets recurring security awareness training covering your actual policies and the risks of their role."},
+ {id:"AT.L2-3.2.2",n:"Role-Based Training",r:"Ensure that personnel are trained to carry out their assigned information security-related duties and responsibilities.",p:"People with security duties (admins, incident responders) get training specific to those duties, not just general awareness."},
+ {id:"AT.L2-3.2.3",n:"Insider Threat Awareness",r:"Provide security awareness training on recognizing and reporting potential indicators of insider threat.",p:"Training includes how to spot and report insider-threat warning signs (data hoarding, policy evasion, disgruntlement paired with access)."}
+]},
+{code:"AU", name:"Audit & Accountability", items:[
+ {id:"AU.L2-3.3.1",n:"System Auditing",r:"Create and retain system audit logs and records to the extent needed to enable the monitoring, analysis, investigation, and reporting of unlawful or unauthorized system activity.",p:"Turn on logging everywhere it matters, and retain the logs long enough to investigate incidents."},
+ {id:"AU.L2-3.3.2",n:"User Accountability",r:"Ensure that the actions of individual system users can be uniquely traced to those users, so they can be held accountable for their actions.",p:"Logs tie actions to specific individuals — which requires unique accounts (no shared logins) and identity in log records."},
+ {id:"AU.L2-3.3.3",n:"Event Review",r:"Review and update logged events.",p:"Periodically revisit which events you log — add what investigations proved you were missing, drop noise."},
+ {id:"AU.L2-3.3.4",n:"Audit Failure Alerting",r:"Alert in the event of an audit logging process failure.",p:"If logging breaks (disk full, service stopped, agent offline), designated staff get alerted so blind spots get fixed fast."},
+ {id:"AU.L2-3.3.5",n:"Audit Correlation",r:"Correlate audit record review, analysis, and reporting processes for investigation and response to indications of unlawful, unauthorized, suspicious, or unusual activity.",p:"Analyze logs across systems together (commonly with a SIEM) so related events on different machines connect into one picture."},
+ {id:"AU.L2-3.3.6",n:"Reduction & Reporting",r:"Provide audit record reduction and report generation to support on-demand analysis and reporting.",p:"Tooling can filter/summarize raw logs and generate reports on demand — you can answer 'who touched X last month?' without grepping by hand."},
+ {id:"AU.L2-3.3.7",n:"Authoritative Time Source",r:"Provide a system capability that compares and synchronizes internal system clocks with an authoritative source to generate time stamps for audit records.",p:"All systems sync clocks to an authoritative time source (NTP) so log timestamps line up across machines."},
+ {id:"AU.L2-3.3.8",n:"Audit Protection",r:"Protect audit information and audit logging tools from unauthorized access, modification, and deletion.",p:"Logs and logging tools are locked down so attackers (or insiders) can't read, alter, or erase the evidence."},
+ {id:"AU.L2-3.3.9",n:"Audit Management",r:"Limit management of audit logging functionality to a subset of privileged users.",p:"Only a small, named set of privileged users can configure or manage logging — not every admin."}
+]},
+{code:"CM", name:"Configuration Management", items:[
+ {id:"CM.L2-3.4.1",n:"System Baselining",r:"Establish and maintain baseline configurations and inventories of organizational systems (including hardware, software, firmware, and documentation) throughout the respective system development life cycles.",p:"Keep a current inventory and documented baseline configuration for your systems — the known-good state everything is built from and compared against."},
+ {id:"CM.L2-3.4.2",n:"Security Configuration Enforcement",r:"Establish and enforce security configuration settings for information technology products employed in organizational systems.",p:"Define hardened settings (e.g., from DISA STIGs or CIS Benchmarks) and enforce them — typically via group policy / configuration management tooling."},
+ {id:"CM.L2-3.4.3",n:"System Change Management",r:"Track, review, approve or disapprove, and log changes to organizational systems.",p:"Formal change control: changes are requested, reviewed, approved or rejected, and logged."},
+ {id:"CM.L2-3.4.4",n:"Security Impact Analysis",r:"Analyze the security impact of changes prior to implementation.",p:"Before a change ships, someone evaluates what it does to security — not just whether it works."},
+ {id:"CM.L2-3.4.5",n:"Access Restrictions for Change",r:"Define, document, approve, and enforce physical and logical access restrictions associated with changes to organizational systems.",p:"Only authorized people can make changes — enforced logically (permissions) and physically (who can touch the hardware)."},
+ {id:"CM.L2-3.4.6",n:"Least Functionality",r:"Employ the principle of least functionality by configuring organizational systems to provide only essential capabilities.",p:"Systems run only what they need — strip sample apps, unused features, and services with no business purpose."},
+ {id:"CM.L2-3.4.7",n:"Nonessential Functionality",r:"Restrict, disable, or prevent the use of nonessential programs, functions, ports, protocols, and services.",p:"Actively close what isn't needed: disable legacy protocols, block unused ports, remove nonessential software."},
+ {id:"CM.L2-3.4.8",n:"Application Execution Policy",r:"Apply deny-by-exception (blacklisting) policy to prevent the use of unauthorized software or deny-all, permit-by-exception (whitelisting) policy to allow the execution of authorized software.",p:"Control what code may run — either block known-bad software, or (stronger) allow only approved applications to execute."},
+ {id:"CM.L2-3.4.9",n:"User-Installed Software",r:"Control and monitor user-installed software.",p:"Users can't freely install software; installs are governed by policy and monitored."}
+]},
+{code:"IA", name:"Identification & Authentication", items:[
+ {id:"IA.L2-3.5.1",n:"Identification",l1:true,r:"Identify system users, processes acting on behalf of users, and devices.",p:"Unique identifiers for every user, service account, and device on CUI systems — carried forward from Level 1."},
+ {id:"IA.L2-3.5.2",n:"Authentication",l1:true,r:"Authenticate (or verify) the identities of users, processes, or devices, as a prerequisite to allowing access to organizational systems.",p:"Verify identity before access, with managed authenticators and no default credentials — carried forward from Level 1."},
+ {id:"IA.L2-3.5.3",n:"Multifactor Authentication",r:"Use multifactor authentication for local and network access to privileged accounts and for network access to non-privileged accounts.",p:"MFA everywhere it counts: privileged accounts always (local and network), and all network access even for regular accounts."},
+ {id:"IA.L2-3.5.4",n:"Replay-Resistant Authentication",r:"Employ replay-resistant authentication mechanisms for network access to privileged and non-privileged accounts.",p:"Authentication can't be captured and replayed — modern protocols (e.g., Kerberos, TLS-protected auth, challenge-response MFA) rather than replayable schemes."},
+ {id:"IA.L2-3.5.5",n:"Identifier Reuse",r:"Prevent reuse of identifiers for a defined period.",p:"A departed user's username isn't reassigned to someone else for a defined period, so old logs and permissions never point at the wrong person."},
+ {id:"IA.L2-3.5.6",n:"Identifier Handling",r:"Disable identifiers after a defined period of inactivity.",p:"Dormant accounts get disabled automatically after a defined idle period."},
+ {id:"IA.L2-3.5.7",n:"Password Complexity",r:"Enforce a minimum password complexity and change of characters when new passwords are created.",p:"Technical policy enforces minimum password strength and requires new passwords to actually differ from old ones."},
+ {id:"IA.L2-3.5.8",n:"Password Reuse",r:"Prohibit password reuse for a specified number of generations.",p:"Password history is enforced — users can't cycle back to recent passwords."},
+ {id:"IA.L2-3.5.9",n:"Temporary Passwords",r:"Allow temporary password use for system logons with an immediate change to a permanent password.",p:"Temporary/first-login passwords force an immediate change to a permanent one."},
+ {id:"IA.L2-3.5.10",n:"Cryptographically-Protected Passwords",r:"Store and transmit only cryptographically-protected passwords.",p:"Passwords are never stored or sent in cleartext — hashed at rest, encrypted in transit."},
+ {id:"IA.L2-3.5.11",n:"Obscure Feedback",r:"Obscure feedback of authentication information.",p:"Password fields show dots, not characters — no shoulder-surfing the login screen."}
+]},
+{code:"IR", name:"Incident Response", items:[
+ {id:"IR.L2-3.6.1",n:"Incident Handling",r:"Establish an operational incident-handling capability for organizational systems that includes preparation, detection, analysis, containment, recovery, and user response activities.",p:"A real, working incident response capability: a plan, assigned people, and the ability to detect, contain, and recover — not a binder on a shelf."},
+ {id:"IR.L2-3.6.2",n:"Incident Reporting",r:"Track, document, and report incidents to designated officials and/or authorities both internal and external to the organization.",p:"Incidents are logged and reported to the right parties — internally, and externally where required (DFARS 252.204-7012 requires rapid reporting of cyber incidents to DoD via DIBNet within 72 hours)."},
+ {id:"IR.L2-3.6.3",n:"Incident Response Testing",r:"Test the organizational incident response capability.",p:"Exercise the IR plan (tabletops, drills) so the first real incident isn't the first test."}
+]},
+{code:"MA", name:"Maintenance", items:[
+ {id:"MA.L2-3.7.1",n:"Perform Maintenance",r:"Perform maintenance on organizational systems.",p:"Systems are actually maintained — patches, updates, repairs — on a managed cadence."},
+ {id:"MA.L2-3.7.2",n:"System Maintenance Control",r:"Provide controls on the tools, techniques, mechanisms, and personnel used to conduct system maintenance.",p:"Control who does maintenance and with what: approved tools and personnel, supervised use of diagnostic equipment."},
+ {id:"MA.L2-3.7.3",n:"Equipment Sanitization",r:"Ensure equipment removed for off-site maintenance is sanitized of any CUI.",p:"Before gear goes to a repair vendor, CUI is wiped from it."},
+ {id:"MA.L2-3.7.4",n:"Media Inspection",r:"Check media containing diagnostic and test programs for malicious code before the media are used in organizational systems.",p:"Scan a technician's diagnostic USB/media for malware before it touches your systems."},
+ {id:"MA.L2-3.7.5",n:"Nonlocal Maintenance",r:"Require multifactor authentication to establish nonlocal maintenance sessions via external network connections and terminate such connections when nonlocal maintenance is complete.",p:"Remote maintenance sessions require MFA and are closed as soon as the work is done."},
+ {id:"MA.L2-3.7.6",n:"Maintenance Personnel",r:"Supervise the maintenance activities of maintenance personnel without required access authorization.",p:"Outside technicians without CUI authorization are escorted and supervised while they work."}
+]},
+{code:"MP", name:"Media Protection", items:[
+ {id:"MP.L2-3.8.1",n:"Media Protection",r:"Protect (i.e., physically control and securely store) system media containing CUI, both paper and digital.",p:"CUI media — drives, tapes, USB, and paper — is physically controlled and stored securely (locked cabinets, controlled rooms)."},
+ {id:"MP.L2-3.8.2",n:"Media Access",r:"Limit access to CUI on system media to authorized users.",p:"Only authorized people can access CUI media; checkout/ownership is tracked."},
+ {id:"MP.L2-3.8.3",n:"Media Disposal",l1:true,r:"Sanitize or destroy system media containing CUI before disposal or release for reuse.",p:"Level 1's media disposal rule, applied to CUI: wipe or destroy before disposal or reuse (NIST SP 800-88 methods)."},
+ {id:"MP.L2-3.8.4",n:"Media Markings",r:"Mark media with necessary CUI markings and distribution limitations.",p:"Media containing CUI is labeled with required CUI markings and distribution statements (per DoD CUI marking guidance)."},
+ {id:"MP.L2-3.8.5",n:"Media Accountability",r:"Control access to media containing CUI and maintain accountability for media during transport outside of controlled areas.",p:"When CUI media leaves controlled areas, custody is tracked — you always know who has it."},
+ {id:"MP.L2-3.8.6",n:"Portable Storage Encryption",r:"Implement cryptographic mechanisms to protect the confidentiality of CUI stored on digital media during transport unless otherwise protected by alternative physical safeguards.",p:"CUI on transported media is encrypted (or under equivalent physical safeguards like a locked courier container)."},
+ {id:"MP.L2-3.8.7",n:"Removable Media",r:"Control the use of removable media on system components.",p:"Removable media use is governed by policy and technical controls — approved devices only, or blocked entirely."},
+ {id:"MP.L2-3.8.8",n:"Shared Media",r:"Prohibit the use of portable storage devices when such devices have no identifiable owner.",p:"Ownerless USB drives are never used. A found flash drive goes to security, not into a laptop."},
+ {id:"MP.L2-3.8.9",n:"Protect Backups",r:"Protect the confidentiality of backup CUI at storage locations.",p:"Backups containing CUI are protected where they're stored — encrypted and/or physically secured."}
+]},
+{code:"PS", name:"Personnel Security", items:[
+ {id:"PS.L2-3.9.1",n:"Screen Individuals",r:"Screen individuals prior to authorizing access to organizational systems containing CUI.",p:"Background screening before someone gets access to CUI systems."},
+ {id:"PS.L2-3.9.2",n:"Personnel Actions",r:"Ensure that organizational systems containing CUI are protected during and after personnel actions such as terminations and transfers.",p:"An offboarding/transfer process that promptly revokes access, recovers equipment and badges, and adjusts permissions."}
+]},
+{code:"PE", name:"Physical Protection", items:[
+ {id:"PE.L2-3.10.1",n:"Limit Physical Access",l1:true,r:"Limit physical access to organizational systems, equipment, and the respective operating environments to authorized individuals.",p:"Level 1's physical access control, applied to the CUI environment."},
+ {id:"PE.L2-3.10.2",n:"Monitor Facility",r:"Protect and monitor the physical facility and support infrastructure for organizational systems.",p:"The facility and its support infrastructure (power, HVAC, cabling) are protected and monitored — alarms, cameras, guards as appropriate."},
+ {id:"PE.L2-3.10.3",n:"Escort Visitors",l1:true,r:"Escort visitors and monitor visitor activity.",p:"Visitors are escorted and monitored — carried forward from Level 1."},
+ {id:"PE.L2-3.10.4",n:"Physical Access Logs",l1:true,r:"Maintain audit logs of physical access.",p:"Entry logs (sign-in sheets or badge records) are kept and retained — carried forward from Level 1."},
+ {id:"PE.L2-3.10.5",n:"Manage Physical Access",l1:true,r:"Control and manage physical access devices.",p:"Keys, badges, and combinations are inventoried, controlled, and revoked when people leave — carried forward from Level 1."},
+ {id:"PE.L2-3.10.6",n:"Alternative Work Sites",r:"Enforce safeguarding measures for CUI at alternate work sites.",p:"Home offices and other alternate sites follow defined safeguards for CUI — locked storage, screen privacy, approved equipment."}
+]},
+{code:"RA", name:"Risk Assessment", items:[
+ {id:"RA.L2-3.11.1",n:"Risk Assessments",r:"Periodically assess the risk to organizational operations (including mission, functions, image, or reputation), organizational assets, and individuals, resulting from the operation of organizational systems and the associated processing, storage, or transmission of CUI.",p:"On a recurring schedule (at least annually per CMMC's definition of 'periodically'), formally assess what could go wrong with your CUI systems and document it."},
+ {id:"RA.L2-3.11.2",n:"Vulnerability Scan",r:"Scan for vulnerabilities in organizational systems and applications periodically and when new vulnerabilities affecting those systems and applications are identified.",p:"Run vulnerability scans on a defined schedule and again when major new vulnerabilities drop."},
+ {id:"RA.L2-3.11.3",n:"Vulnerability Remediation",r:"Remediate vulnerabilities in accordance with risk assessments.",p:"Fix what scans find, prioritized by the risk it poses — with the prioritization documented."}
+]},
+{code:"CA", name:"Security Assessment", items:[
+ {id:"CA.L2-3.12.1",n:"Security Control Assessment",r:"Periodically assess the security controls in organizational systems to determine if the controls are effective in their application.",p:"Regularly test your own controls to confirm they actually work as intended, not just that they're configured."},
+ {id:"CA.L2-3.12.2",n:"Operational Plan of Action",r:"Develop and implement plans of action designed to correct deficiencies and reduce or eliminate vulnerabilities in organizational systems.",p:"Maintain a living plan-of-action document for deficiencies you discover in operation: what's wrong, the fix, the deadline, the owner. (Distinct from the assessment POA&M of 32 CFR 170.21.)"},
+ {id:"CA.L2-3.12.3",n:"Security Control Monitoring",r:"Monitor security controls on an ongoing basis to ensure the continued effectiveness of the controls.",p:"Continuous monitoring: dashboards, alerts, and recurring checks that catch control drift between formal assessments."},
+ {id:"CA.L2-3.12.4",n:"System Security Plan",r:"Develop, document, and periodically update system security plans that describe system boundaries, system environments of operation, how security requirements are implemented, and the relationships with or connections to other systems.",p:"The SSP is mandatory at Level 2: a formal document describing your boundary, environment, how each requirement is implemented, and connections to other systems — kept current."}
+]},
+{code:"SC", name:"System & Communications Protection", items:[
+ {id:"SC.L2-3.13.1",n:"Boundary Protection",l1:true,r:"Monitor, control, and protect communications (i.e., information transmitted or received by organizational systems) at the external boundaries and key internal boundaries of organizational systems.",p:"Level 1's firewall-and-boundaries requirement, applied to the CUI environment."},
+ {id:"SC.L2-3.13.2",n:"Security Engineering",r:"Employ architectural designs, software development techniques, and systems engineering principles that promote effective information security within organizational systems.",p:"Build security in: segmentation, defense-in-depth, and secure development practices are part of how systems are designed, not bolted on."},
+ {id:"SC.L2-3.13.3",n:"Role Separation",r:"Separate user functionality from system management functionality.",p:"Admin interfaces are separated from user-facing functionality — e.g., management on a separate network/VLAN or dedicated admin workstations."},
+ {id:"SC.L2-3.13.4",n:"Shared Resource Control",r:"Prevent unauthorized and unintended information transfer via shared system resources.",p:"Shared resources (memory, storage, print queues) can't leak one user's CUI to another — systems clear/protect shared resources between uses."},
+ {id:"SC.L2-3.13.5",n:"Public-Access System Separation",l1:true,r:"Implement subnetworks for publicly accessible system components that are physically or logically separated from internal networks.",p:"Level 1's DMZ requirement, applied around the CUI environment."},
+ {id:"SC.L2-3.13.6",n:"Network Communication by Exception",r:"Deny network communications traffic by default and allow network communications traffic by exception (i.e., deny all, permit by exception).",p:"Firewall rules default-deny in both directions; only explicitly approved traffic passes."},
+ {id:"SC.L2-3.13.7",n:"Split Tunneling",r:"Prevent remote devices from simultaneously establishing non-remote connections with organizational systems and communicating via some other connection to resources in external networks (i.e., split tunneling).",p:"VPN clients are configured so a remote device can't be on your network and the open internet through separate paths at the same time."},
+ {id:"SC.L2-3.13.8",n:"Data in Transit",r:"Implement cryptographic mechanisms to prevent unauthorized disclosure of CUI during transmission unless otherwise protected by alternative physical safeguards.",p:"CUI in transit is encrypted (TLS, VPN) unless it travels only over physically protected lines."},
+ {id:"SC.L2-3.13.9",n:"Connections Termination",r:"Terminate network connections associated with communications sessions at the end of the sessions or after a defined period of inactivity.",p:"Network sessions are torn down when finished or after defined idle time — no connections left open indefinitely."},
+ {id:"SC.L2-3.13.10",n:"Key Management",r:"Establish and manage cryptographic keys for cryptography employed in organizational systems.",p:"Cryptographic keys and certificates are generated, stored, rotated, and revoked under a managed process."},
+ {id:"SC.L2-3.13.11",n:"CUI Encryption",r:"Employ FIPS-validated cryptography when used to protect the confidentiality of CUI.",p:"When encryption is what protects CUI's confidentiality, the cryptographic module must be FIPS 140 validated — an approved algorithm alone is not sufficient; the implementing module must hold a validation certificate."},
+ {id:"SC.L2-3.13.12",n:"Collaborative Device Control",r:"Prohibit remote activation of collaborative computing devices and provide indication of devices in use to users present at the device.",p:"Cameras, mics, and room systems can't be switched on remotely without indication — users present can tell when a device is live."},
+ {id:"SC.L2-3.13.13",n:"Mobile Code",r:"Control and monitor the use of mobile code.",p:"Code that executes from remote sources in browsers/documents (JavaScript, ActiveX, macros) is controlled by policy and technical settings."},
+ {id:"SC.L2-3.13.14",n:"Voice over Internet Protocol",r:"Control and monitor the use of Voice over Internet Protocol (VoIP) technologies.",p:"VoIP is deployed under usage restrictions and monitoring like any other network service."},
+ {id:"SC.L2-3.13.15",n:"Communications Authenticity",r:"Protect the authenticity of communications sessions.",p:"Sessions are protected against hijacking and man-in-the-middle — e.g., TLS with certificate validation."},
+ {id:"SC.L2-3.13.16",n:"Data at Rest",r:"Protect the confidentiality of CUI at rest.",p:"CUI stored on disks, databases, and file shares is protected — typically encryption at rest plus access controls."}
+]},
+{code:"SI", name:"System & Information Integrity", items:[
+ {id:"SI.L2-3.14.1",n:"Flaw Remediation",l1:true,r:"Identify, report, and correct system flaws in a timely manner.",p:"Level 1's patch-management discipline, applied across the CUI environment."},
+ {id:"SI.L2-3.14.2",n:"Malicious Code Protection",l1:true,r:"Provide protection from malicious code at designated locations within organizational systems.",p:"Level 1's anti-malware deployment, applied across the CUI environment."},
+ {id:"SI.L2-3.14.3",n:"Security Alerts & Advisories",r:"Monitor system security alerts and advisories and take action in response.",p:"Someone watches security advisories (CISA, vendors) and your organization acts on the relevant ones."},
+ {id:"SI.L2-3.14.4",n:"Update Malicious Code Protection",l1:true,r:"Update malicious code protection mechanisms when new releases are available.",p:"Anti-malware stays current — carried forward from Level 1."},
+ {id:"SI.L2-3.14.5",n:"System & File Scanning",l1:true,r:"Perform periodic scans of organizational systems and real-time scans of files from external sources as files are downloaded, opened, or executed.",p:"Scheduled plus real-time malware scanning — carried forward from Level 1."},
+ {id:"SI.L2-3.14.6",n:"Monitor Communications for Attacks",r:"Monitor organizational systems, including inbound and outbound communications traffic, to detect attacks and indicators of potential attacks.",p:"Watch network traffic in both directions for attack indicators — IDS/IPS, EDR, or SIEM-driven monitoring."},
+ {id:"SI.L2-3.14.7",n:"Identify Unauthorized Use",r:"Identify unauthorized use of organizational systems.",p:"Define what authorized use looks like and detect deviations — unusual logins, odd hours, unexpected data movement."}
+]}
+];
+
+
+/* =====================================================================
+   DATA — Process steps (phases 1, 2, 4, 5, 7, 8)
+   ===================================================================== */
+const PROC = {
+ "p1-list":[
+  {k:"p1-read",n:"Read the official program pages",d:"Start with the DoD CIO CMMC home page and the About CMMC page. They define the levels, the assessment table, and current program status — and they change, so bookmark them.",s:"dodcio.defense.gov/CMMC"},
+  {k:"p1-contracts",n:"Pull your contracts and list the cybersecurity clauses",d:"For each DoD contract or subcontract, note which clauses appear: FAR 52.204-21 (basic safeguarding → FCI/Level 1), DFARS 252.204-7012 (NIST SP 800-171 + incident reporting → CUI), DFARS 252.204-7019/7020 (SPRS assessment score), and any CMMC clause. If you're a subcontractor, ask your prime what flows down to you.",s:"FAR 52.204-21 · DFARS 252.204-7012 / -7019 / -7020"},
+  {k:"p1-level",n:"Determine your target level",d:"Handle only FCI → Level 1. Handle CUI (or hold contracts with DFARS 252.204-7012) → Level 2. When in doubt about whether specific information is CUI, ask the contracting officer or your prime in writing.",s:"32 CFR Part 170 · DoD CIO About CMMC"},
+  {k:"p1-docs",n:"Read the CMMC 101 brief and Model Overview",d:"Two short official documents that explain the model's structure in plain terms before you dive into requirement text.",s:"CMMC 101 (Nov 2025) · CMMC Model Overview v2"},
+  {k:"p1-owner",n:"Assign an owner and identify your affirming official",d:"Name the person who will run this effort day to day, and identify the senior official who will make the compliance affirmation in SPRS — affirmations are a formal representation to the Government, so leadership must be involved from the start.",s:"32 CFR 170.22 (affirmation)"}
+ ],
+ "p2-list":[
+  {k:"p2-sam",n:"Verify your SAM.gov registration",d:"You need an active SAM registration with a Unique Entity ID (UEI) and CAGE code to contract with DoD and to be identified in SPRS.",s:"sam.gov"},
+  {k:"p2-piee",n:"Get PIEE and SPRS access",d:"SPRS is accessed through the Procurement Integrated Enterprise Environment (PIEE). Create a PIEE account and request the SPRS 'Cyber Reports' role for the person who will enter assessment results.",s:"sprs.csd.disa.mil · piee.eb.mil"},
+  {k:"p2-map",n:"Map where FCI (and later CUI) actually lives",d:"Trace the information: how it arrives (email, portals), where it's stored (file shares, cloud, laptops, paper), how it moves, and who touches it. You cannot scope what you haven't mapped.",s:"CMMC Scoping Guide L1"},
+  {k:"p2-scope",n:"Define and document your CMMC Assessment Scope",d:"Per 32 CFR 170.19(a), assets that process, store, or transmit FCI are in scope for Level 1. Decide deliberately: whole enterprise, or a contained enclave. Smaller scope = smaller assessment. Write the scope down with a network diagram.",s:"32 CFR 170.19 · Scoping Guide L1"},
+  {k:"p2-inventory",n:"Build the in-scope asset inventory",d:"Hardware, software, firmware, cloud services, and the people and processes that use them. This inventory becomes the backbone of your assessment and (at Level 2) your SSP.",s:"Assessment Guide L1"},
+  {k:"p2-esp",n:"Identify External Service Providers and what they cover",d:"MSPs, MSSPs, and cloud providers can satisfy requirements on your behalf — but only if you hold adequate evidence that they implement the objectives. Collect contracts, shared-responsibility matrices, and attestations now.",s:"32 CFR 170.4 (ESP) · Assessment Guide L1"},
+  {k:"p2-binder",n:"Start the evidence binder (and an SSP skeleton)",d:"Create the documentation set assessments run on: policies, procedures, network and data-flow diagrams, and configuration records — in final, approved form. An SSP is recommended at Level 1 and required at Level 2, so start its skeleton now.",s:"Assessment Guide L1 (evidence rules)"}
+ ],
+ "p4-list":[
+  {k:"p4-assess",n:"Conduct the Level 1 self-assessment",d:"Assess each of the 15 requirements against its NIST SP 800-171A objectives (with FCI substituted for CUI), using examine / interview / test. Record MET, NOT MET, or N/A at the objective level. One NOT MET objective fails the whole requirement.",s:"32 CFR 170.15 · NIST SP 800-171A"},
+  {k:"p4-fix",n:"Remediate everything NOT MET, then re-verify",d:"POA&Ms are not permitted at Level 1, so there is no partial credit: fix each gap and re-run the affected assessment objectives until everything is MET or N/A.",s:"32 CFR 170.15 / 170.21"},
+  {k:"p4-report",n:"Write the self-assessment report",d:"Document findings per requirement with references to the final-form evidence supporting each MET, and a rationale for each N/A. This report is what stands behind your SPRS entry.",s:"Assessment Guide L1"},
+  {k:"p4-sprs",n:"Enter Level 1 self-assessment results into SPRS",d:"Submit the compliance result for your defined scope in SPRS. This records the CMMC Status of Final Level 1 (Self).",s:"32 CFR 170.15 · SPRS"},
+  {k:"p4-affirm",n:"Senior official affirms compliance in SPRS",d:"After the assessment, your affirming official attests to continuing compliance in SPRS. Affirmation is required after each assessment.",s:"32 CFR 170.22"},
+  {k:"p4-annual",n:"Schedule the annual cycle",d:"Level 1 requires an annual self-assessment and annual affirmation. Put next year's on the calendar now, with time in front of it for remediation.",s:"32 CFR 170.15"}
+ ],
+ "p5-list":[
+  {k:"p5-cui",n:"Identify the CUI you receive or create",d:"Review contract documents and deliverables for CUI markings and requirements; use the DoD CUI Registry for categories (e.g., Controlled Technical Information). If marking or status is unclear, ask the contracting officer or prime in writing — never guess.",s:"32 CFR 2002 · dodcui.mil"},
+  {k:"p5-scope",n:"Scope the CUI environment and categorize assets",d:"Apply the Level 2 Scoping Guide's five asset categories (CUI, Security Protection, Contractor Risk Managed, Specialized, Out-of-Scope). Use physical or logical separation to keep everything else out of scope, and document the result.",s:"32 CFR 170.19(c) · Scoping Guide L2"},
+  {k:"p5-enclave",n:"Decide: enclave or enterprise-wide",d:"Many small and mid-size organizations build a dedicated CUI enclave (segmented network or a government-cloud environment) rather than bringing 110 requirements to every corporate system. Design the separation before you start implementing.",s:"Scoping Guide L2"},
+  {k:"p5-ssp",n:"Write the System Security Plan",d:"Required by requirement CA.L2-3.12.4: document the boundary, environment, how each of the 110 requirements is (or will be) implemented, and connections to other systems. The SSP is the anchor document for the entire assessment.",s:"NIST SP 800-171r2 3.12.4"},
+  {k:"p5-gap",n:"Run a full gap analysis and compute your SPRS score",d:"Assess yourself against all 110 requirements and score using the DoD Assessment Methodology (110 max; weighted deductions per unimplemented requirement). This tells you your real distance from Level 2 and drives the roadmap.",s:"DFARS 252.204-7020 · 32 CFR 170.24"},
+  {k:"p5-basic",n:"Post your Basic NIST SP 800-171 assessment score in SPRS",d:"Independent of CMMC: contracts carrying DFARS 252.204-7019/7020 require a current Basic (self) assessment score in SPRS. If you have such contracts and no current score, do this now.",s:"DFARS 252.204-7019 / -7020"},
+  {k:"p5-plan",n:"Build the remediation roadmap",d:"Turn every gap into a task with an owner, a date, and a budget line. Sequence for score impact and dependencies (identity and boundary work usually comes first).",s:"NIST SP 800-171r2 3.12.2"}
+ ],
+ "p7-list":[
+  {k:"p7-assess",n:"Conduct the Level 2 self-assessment",d:"Assess all 110 requirements against their NIST SP 800-171A objectives with examine / interview / test, at the objective level, for the documented scope — the same criteria a C3PAO would use.",s:"32 CFR 170.16 · NIST SP 800-171A"},
+  {k:"p7-score",n:"Score the assessment per the CMMC scoring methodology",d:"Apply 32 CFR 170.24 to produce your assessment score against the 110-point maximum.",s:"32 CFR 170.24"},
+  {k:"p7-poam",n:"If needed and eligible, document a compliant POA&M",d:"Only if you meet §170.21(a)(2)'s conditions (minimum 80% score; only POA&M-eligible requirements NOT MET). Verify eligibility against the regulation text itself — the list of never-POA&M requirements is enumerated there.",s:"32 CFR 170.21(a)(2)"},
+  {k:"p7-sprs",n:"Submit Level 2 results into SPRS",d:"Enter the assessment results for your scope. With a compliant POA&M this yields Conditional Level 2 (Self); with everything MET/N-A, Final Level 2 (Self), valid three years from the status date.",s:"32 CFR 170.16 · SPRS"},
+  {k:"p7-affirm",n:"Senior official affirms in SPRS",d:"Affirmation is required after the assessment and annually thereafter — a lapsed affirmation lapses the status.",s:"32 CFR 170.22"},
+  {k:"p7-closeout",n:"Close out any POA&M within 180 days",d:"Perform the POA&M closeout self-assessment on the previously NOT MET requirements within 180 days of the conditional status date to convert to Final Level 2 (Self). Miss the window and the conditional status expires.",s:"32 CFR 170.21"}
+ ],
+ "p8-list":[
+  {k:"p8-affirm",n:"Keep the affirmation and assessment calendar",d:"Level 1: self-assessment + affirmation every year. Level 2: affirmation every year, self-assessment every three years. Statuses lapse without them.",s:"32 CFR 170.15 / 170.16 / 170.22"},
+  {k:"p8-drift",n:"Re-evaluate whenever the environment changes",d:"New systems, cloud migrations, office moves, mergers, or new contract types can change your scope and break MET findings. Update the SSP and re-assess affected requirements as part of change management.",s:"NIST SP 800-171r2 3.12.4"},
+  {k:"p8-incident",n:"Maintain DFARS 7012 incident readiness",d:"Contracts with DFARS 252.204-7012 require rapid reporting of cyber incidents to DoD via DIBNet (dibnet.dod.mil) within 72 hours of discovery, preservation of relevant system images and monitoring data, and cooperation with damage assessment. Bake this into your incident response plan and test it.",s:"DFARS 252.204-7012(c)–(m)"},
+  {k:"p8-watch",n:"Watch the program — it is actively changing",d:"With Phase II suspended and a reform task force underway (announced July 13, 2026), requirements and timelines may change. Check the DoD CIO CMMC page periodically and re-verify anything you rely on here.",s:"dodcio.defense.gov/CMMC"},
+  {k:"p8-ops",n:"Keep the operational rhythm running",d:"Training, vulnerability scans, patching, log review, access recertification, backup tests, and IR exercises — on the recurring schedules your policies define. 'Periodically' in CMMC means an organization-defined interval of no more than one year.",s:"Assessment Guide L2 (custom terms)"}
+ ]
+};
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function itemHTML(key, tag, title, body){
+  return `<div class="item" data-key="${key}">
+    <input type="checkbox" aria-label="Mark complete: ${esc(title)}">
+    <span class="stamp">MET</span>
+    ${tag}<h4>${esc(title)}</h4>${body}</div>`;
+}
+
+function renderProc(listId){
+  const el = document.getElementById(listId);
+  el.innerHTML = PROC[listId].map(s => itemHTML(
+    "P:"+s.k,
+    "",
+    s.n,
+    `<p class="plain">${s.d}</p><p class="src">Source: ${esc(s.s)}</p>`
+  )).join("");
+}
+
+function renderL1(){
+  document.getElementById("l1-list").innerHTML = L1.map(q => itemHTML(
+    "L1:"+q.id,
+    `<span class="id">${q.id}</span>`,
+    q.n,
+    `<div class="req"><span class="q">Requirement — FAR 52.204-21${q.far}</span>${esc(q.r)}</div>
+     <p class="plain"><b>What this means:</b> ${q.p}</p>
+     <details><summary>Assessment objectives (${q.obj.length}) — all must be MET or N/A</summary>
+       <ol type="a">${q.obj.map(o=>`<li>${esc(o)}</li>`).join("")}</ol></details>
+     <p class="src">Sources: <a href="https://www.acquisition.gov/far/52.204-21" target="_blank" rel="noopener">FAR 52.204-21${q.far}</a> · NIST SP 800-171r2 ${q.nist} · <a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/AssessmentGuideL1v2.pdf" target="_blank" rel="noopener">CMMC Assessment Guide L1 v2.13</a></p>`
+  )).join("");
+}
+
+function renderL2(){
+  const wrap = document.getElementById("l2-domains");
+  wrap.innerHTML = L2D.map(d => `
+    <details class="domain" data-dcode="${d.code}">
+      <summary><span class="dcode">${d.code}</span><h3>${esc(d.name)}</h3>
+        <span class="dcount" data-count="${d.code}">0 / ${d.items.length}</span>
+        <svg class="caret" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </summary>
+      <div class="check-list">${d.items.map(q => itemHTML(
+        "L2:"+q.id,
+        `<span class="id">${q.id}</span>${q.l1?`<span class="id" style="background:#F4EEDA;border-color:#E0D3A0;color:#7A6417">Builds on Level 1</span>`:""}`,
+        q.n,
+        `<div class="req"><span class="q">Requirement — NIST SP 800-171r2 ${q.id.split("-")[1]}</span>${esc(q.r)}</div>
+         <p class="plain"><b>What this means:</b> ${q.p}</p>
+         <p class="src">Sources: <a href="https://csrc.nist.gov/pubs/sp/800/171/r2/upd1/final" target="_blank" rel="noopener">NIST SP 800-171r2 ${q.id.split("-")[1]}</a> · <a href="https://dodcio.defense.gov/Portals/0/Documents/CMMC/AssessmentGuideL2v2.pdf" target="_blank" rel="noopener">CMMC Assessment Guide L2 v2.13</a> · objectives in <a href="https://csrc.nist.gov/pubs/sp/800/171/a/final" target="_blank" rel="noopener">NIST SP 800-171A</a></p>`
+      )).join("")}</div>
+    </details>`).join("");
+}
+
+/* =====================================================================
+   STATE & PERSISTENCE
+   window.storage (Claude artifact) -> localStorage (self-hosted) -> memory
+   ===================================================================== */
+let state = {};
+let backend = "memory";
+
+async function loadState(){
+  try{
+    if(window.storage && window.storage.get){
+      backend = "artifact";
+      try{
+        const res = await window.storage.get("cmmc-checklist-v1");
+        if(res && res.value) state = JSON.parse(res.value);
+      }catch(e){ /* key doesn't exist yet */ }
+      return;
+    }
+  }catch(e){}
+  try{
+    const raw = localStorage.getItem("cmmc-checklist-v1");
+    backend = "local";
+    if(raw) state = JSON.parse(raw);
+  }catch(e){ backend = "memory"; }
+}
+
+let saveTimer = null;
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const payload = JSON.stringify(state);
+    try{
+      if(backend === "artifact"){ await window.storage.set("cmmc-checklist-v1", payload); return; }
+      if(backend === "local"){ localStorage.setItem("cmmc-checklist-v1", payload); return; }
+    }catch(e){ console.error("Save failed", e); }
+  }, 350);
+}
+
+/* =====================================================================
+   PROGRESS + WIRING
+   ===================================================================== */
+function updateCounts(){
+  let l1=0, l2=0, pr=0;
+  const dom = {};
+  for(const k in state){ if(!state[k]) continue;
+    if(k.startsWith("L1:")) l1++;
+    else if(k.startsWith("L2:")){ l2++; const code=k.slice(3).split(".")[0]; dom[code]=(dom[code]||0)+1; }
+    else if(k.startsWith("P:")) pr++;
+  }
+  const procTotal = Object.values(PROC).reduce((a,b)=>a+b.length,0);
+  document.querySelector("#score-l1 .num span").textContent = l1;
+  document.querySelector("#score-l2 .num span").textContent = l2;
+  document.querySelector("#score-proc .num span").textContent = pr;
+  document.getElementById("proc-total").textContent = procTotal;
+  document.getElementById("score-l1").classList.toggle("done", l1===15);
+  document.getElementById("score-l2").classList.toggle("done", l2===110);
+  document.getElementById("score-proc").classList.toggle("done", pr===procTotal);
+  const p1 = Math.round(l1/15*100), p2 = Math.round(l2/110*100);
+  document.getElementById("bar-l1").style.width = p1+"%";
+  document.getElementById("bar-l2").style.width = p2+"%";
+  document.getElementById("pct-l1").textContent = l1+" / 15 · "+p1+"%";
+  document.getElementById("pct-l2").textContent = l2+" / 110 · "+p2+"%";
+  L2D.forEach(d => {
+    const el = document.querySelector(`[data-count="${d.code}"]`);
+    const c = dom[d.code]||0;
+    el.textContent = c+" / "+d.items.length;
+    el.classList.toggle("done", c===d.items.length);
+  });
+}
+
+function wire(){
+  document.querySelectorAll(".item").forEach(it => {
+    const key = it.dataset.key;
+    const cb = it.querySelector("input[type=checkbox]");
+    if(state[key]){ cb.checked = true; it.classList.add("checked"); }
+    cb.addEventListener("change", () => {
+      state[key] = cb.checked;
+      if(!cb.checked) delete state[key];
+      it.classList.toggle("checked", cb.checked);
+      updateCounts();
+      saveState();
+    });
+  });
+  document.getElementById("reset-btn").addEventListener("click", async () => {
+    if(!confirm("Reset all progress on this checklist?")) return;
+    state = {};
+    try{
+      if(backend==="artifact") await window.storage.delete("cmmc-checklist-v1");
+      else if(backend==="local") localStorage.removeItem("cmmc-checklist-v1");
+    }catch(e){}
+    document.querySelectorAll(".item").forEach(it => {
+      it.classList.remove("checked");
+      it.querySelector("input").checked = false;
+    });
+    updateCounts();
+  });
+}
+
+(async function init(){
+  renderProc("p1-list"); renderProc("p2-list"); renderProc("p4-list");
+  renderProc("p5-list"); renderProc("p7-list"); renderProc("p8-list");
+  renderL1(); renderL2();
+  await loadState();
+  wire();
+  updateCounts();
+  const note = document.getElementById("save-note");
+  note.textContent = backend==="memory"
+    ? "Note: storage is unavailable in this environment — progress lasts for this session only."
+    : "Progress saves automatically on this device.";
+})();
+</script>
+</body>
+</html>
